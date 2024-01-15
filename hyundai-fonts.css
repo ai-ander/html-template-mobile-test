@@ -1,0 +1,69 @@
+@font-face {
+    font-family: "Hyundai Sans Text";
+    src: url("/fonts/HyundaiSansText-Bold.otf") format("opentype");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Head";
+    src: url("/fonts/HyundaiSansHead-Light.otf") format("opentype");
+    font-weight: 300;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Head";
+    src: url("/fonts/HyundaiSansHead-Bold.otf") format("opentype");
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Head";
+    src: url("/fonts/HyundaiSansHead-Medium.otf") format("opentype");
+    font-weight: 500;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Text";
+    src: url("/fonts/HyundaiSansText-BoldItalic.otf") format("opentype");
+    font-weight: bold;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Text";
+    src: url("/fonts/HyundaiSansText-Regular.otf") format("opentype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Head";
+    src: url("/fonts/HyundaiSansHead-Regular.otf") format("opentype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Text";
+    src: url("/fonts/HyundaiSansText-MediumItalic.otf") format("opentype");
+    font-weight: 500;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Text";
+    src: url("/fonts/HyundaiSansText-Italic.otf") format("opentype");
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Hyundai Sans Text";
+    src: url("/fonts/HyundaiSansText-Medium.otf") format("opentype");
+    font-weight: 500;
+    font-style: normal;
+}
