@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+
+    <style>
+      /* http://meyerweb.com/eric/tools/css/reset/
+           v2.0 | 20110126
+           License: none (public domain)
+        */
+
+      html,
+      body,
+      div,
+      span,
+      applet,
+      object,
+      iframe,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      p,
+      blockquote,
+      pre,
+      a,
+      abbr,
+      acronym,
+      address,
+      big,
+      cite,
+      code,
+      del,
+      dfn,
+      em,
+      img,
+      ins,
+      kbd,
+      q,
+      s,
+      samp,
+      small,
+      strike,
+      strong,
+      sub,
+      sup,
+      tt,
+      var,
+      b,
+      u,
+      i,
+      center,
+      dl,
+      dt,
+      dd,
+      ol,
+      ul,
+      li,
+      fieldset,
+      form,
+      label,
+      legend,
+      table,
+      caption,
+      tbody,
+      tfoot,
+      thead,
+      tr,
+      th,
+      td,
+      article,
+      aside,
+      canvas,
+      details,
+      embed,
+      figure,
+      figcaption,
+      footer,
+      header,
+      hgroup,
+      menu,
+      nav,
+      output,
+      ruby,
+      section,
+      summary,
+      time,
+      mark,
+      audio,
+      video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+      }
+      /* HTML5 display-role reset for older browsers */
+      article,
+      aside,
+      details,
+      figcaption,
+      figure,
+      footer,
+      header,
+      hgroup,
+      menu,
+      nav,
+      section {
+        display: block;
+      }
+      body {
+        line-height: 1;
+      }
+      ol,
+      ul {
+        list-style: none;
+      }
+      blockquote,
+      q {
+        quotes: none;
+      }
+      blockquote:before,
+      blockquote:after,
+      q:before,
+      q:after {
+        content: "";
+        content: none;
+      }
+      table {
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+    </style>
+
+    <style>
+      .text-4xl {
+        font-size: 2.25rem; /* 36px */
+        line-height: 2.5rem; /* 40px */
+      }
+
+      .text-3xl {
+        font-size: 1.875rem; /* 30px */
+        line-height: 2.25rem; /* 36px */
+      }
+
+      .text-2xl {
+        font-size: 1.5rem; /* 24px */
+        line-height: 2rem; /* 32px */
+      }
+
+      .font-sans {
+        font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+          "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      }
+    </style>
+
+    <style>
+      section {
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      section:first-child {
+        margin-top: 0;
+      }
+    </style>
+
+    <link href="//vjs.zencdn.net/8.3.0/video-js.min.css" rel="stylesheet" />
+    <link
+      href="https://mdc.qa.ander.ai/css/hyundai-fonts.css"
+      rel="stylesheet"
+    />
+    <script src="//vjs.zencdn.net/8.3.0/video.min.js"></script>
+
+    <!--    <script src="https://cdn.tailwindcss.com"></script>-->
+    <title>HTML template page</title>
+  </head>
+  <body>
+    <section>
+      <h1 class="text-4xl">Heading H1</h1>
+      <h2 class="text-3xl" style="text-align: center">Heading H2 (centered)</h2>
+      <p>Paragraph</p>
+      <h3 class="text-2xl">Heading H3</h3>
+      <p style="font-style: italic">Italic</p>
+      <p style="font-weight: bold">Bold</p>
+      <p><s>Strikeout</s></p>
+      <p><u>Underlined</u></p>
+    </section>
+
+    <section>
+      <p style="text-align: justify">
+        Justified paragraph. Lorem Ipsum is simply dummy text of the printing
+        and typesetting industry. Lorem Ipsum has been the industry's standard
+        dummy text ever since the 1500s, when an unknown printer took a galley
+        of type and scrambled it to make a type specimen book.
+      </p>
+    </section>
+
+    <section>
+      <p class="font-sans">
+        Another font used (one of: ui-sans-serif, system-ui, sans-serif, "Apple
+        Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji").
+      </p>
+    </section>
+
+    <section>
+      <h3
+        class="text-2xl"
+        style="font-family: Hyundai Sans Head; font-weight: bold"
+      >
+        Hyundai Sans Head font
+      </h3>
+      <p style="font-family: Hyundai Sans Text; font-size: 1.125rem">
+        Hyundai Sans Text font used here.
+      </p>
+    </section>
+
+    <section>
+      <a href="https://server.qa.ander.ai/">Link to QA Admin App</a>
+    </section>
+
+    <section>
+      <p>Image with 50% width (up-scaling allowed)</p>
+      <img
+        src="https://doxmc9t49j90j.cloudfront.net/img/CARD2-SSR.jpg"
+        alt="Card 2 SSR"
+        style="width: 50%"
+      />
+    </section>
+
+    <section>Image coming from Media Library TODO</section>
+
+    <section>
+      <p>Image with 100% width (up-scaling allowed)</p>
+      <img
+        src="https://doxmc9t49j90j.cloudfront.net/img/CARD2-SSR.jpg"
+        alt="Card 2 SSR"
+        style="width: 100%"
+      />
+    </section>
+
+    <section>
+      <p>
+        Image with 100px width (aspect ratio preserved) and with a link to
+        https://google.com/
+      </p>
+      <a href="https://google.com/" target="_blank">
+        <img
+          src="https://doxmc9t49j90j.cloudfront.net/img/CARD2-SSR.jpg"
+          alt="Card 2 SSR"
+          style="width: 100px; object-fit: contain"
+        />
+      </a>
+    </section>
+
+    <section>
+      <p>PNG image</p>
+      <img
+        style="object-fit: contain; max-height: 10rem; max-width: 100%"
+        src="https://d3g090eexiuos8.cloudfront.net/files/Blind-Spot%20View%20Monitor-BVM.png"
+        alt="Blind spot monitor"
+      />
+    </section>
+
+    <section>
+      <p>GIF image</p>
+      <img
+        style="object-fit: contain; max-height: 10rem; max-width: 100%"
+        src="https://d3g090eexiuos8.cloudfront.net/files/Blind-Spot%20Collision-Avoidance%20Assist-BCA.gif"
+        alt="Blind spot collision avoidance assist"
+      />
+    </section>
+
+    <section
+      style="display: flex; justify-content: center; flex-direction: row"
+    >
+      <div style="width: 15rem">
+        <div style="float: left">
+          <img
+            src="https://doxmc9t49j90j.cloudfront.net/img/CARD2-SSR.jpg"
+            alt="Card 2 SSR"
+            style="
+              object-fit: contain;
+              height: 9em;
+              display: block;
+              margin: 0 1em 1em 0;
+            "
+          />
+        </div>
+        Floated text. Lorem Ipsum is simply dummy text of the printing and
+        typesetting industry. Lorem Ipsum has been the industry's standard dummy
+        text ever since the 1500s, when an unknown printer took a galley of type
+        and scrambled it to make a type specimen book.
+      </div>
+    </section>
+
+    <section>
+      <p>Video (HLS, native support)</p>
+      <video controls width="300">
+        <source
+          src="https://doxmc9t49j90j.cloudfront.net/video/converted/1._heart_in_action_v3.1_5.23.23+(1080p).mp4.m3u8"
+          type="application/x-mpegURL"
+        />
+        <p>
+          To view this video please enable JavaScript, and consider upgrading to
+          a web browser that supports HTML5 video.
+        </p>
+      </video>
+    </section>
+
+    <section>
+      <p>Video (HLS with VideoJS library)</p>
+      <video
+        controls
+        width="300"
+        preload="auto"
+        data-setup="{}"
+        class="video-js"
+      >
+        <source
+          src="https://doxmc9t49j90j.cloudfront.net/video/converted/1._heart_in_action_v3.1_5.23.23+(1080p).mp4.m3u8"
+          type="application/x-mpegURL"
+        />
+        <p class="vjs-no-js">
+          To view this video please enable JavaScript, and consider upgrading to
+          a web browser that
+          <a href="https://videojs.com/html5-video-support/" target="_blank">
+            supports HTML5 video
+          </a>
+        </p>
+      </video>
+    </section>
+
+    <section>
+      <p>Video (WebM)</p>
+      <video controls width="300">
+        <source
+          src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"
+          type="video/webm"
+        />
+      </video>
+    </section>
+
+    <section>
+      <p>Video (MP4)</p>
+      <video controls width="300">
+        <source
+          src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"
+          type="video/mp4"
+        />
+      </video>
+    </section>
+  </body>
+</html>
