@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Test access token from cookie</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+<h1 id="cookie-name"></h1>
+<h2 id="cookie-value"></h2>
+
+<script>
+  const COOKIE_NAME = 'AuthorizationHeader';
+  const authorizationHeader = readCookie(COOKIE_NAME);
+
+  const headerForName = document.getElementById('cookie-name');
+  const headerForValue = document.getElementById('cookie-value');
+  if (authorizationHeader != null) {
+    headerForName.innerText = `Cookie "${COOKIE_NAME}" has value:`;
+    headerForValue.innerText = authorizationHeader;
+    console.log(`${COOKIE_NAME} cookie value:`, authorizationHeader);
+  } else {
+    headerForName.innerText = `Cookie "${COOKIE_NAME}" not found`;
+    headerForValue.innerText = '';
+    console.log('AuthorizationHeader cookie not found');
+  }
+
+  function readCookie(name) {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      let cookie = cookies[i].trim();
+      if (cookie.startsWith(name + '=')) {
+        return cookie.substring(name.length + 1);
+      }
+    }
+    return null;
+  }
+</script>
+</body>
+</html>

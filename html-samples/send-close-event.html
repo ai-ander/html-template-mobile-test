@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Test close event</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script>
+    function sendCloseButtonEvent() {
+      const CLOSE_EVENT_MESSAGE = "godot_game:close_event";
+      const resultHeader = document.getElementById("result");
+
+      if (window.NativeJavascriptInterface) {
+        // Call Android interface
+        try {
+          window.NativeJavascriptInterface.postMessage(CLOSE_EVENT_MESSAGE);
+          resultHeader.style.backgroundColor = 'green';
+          resultHeader.innerText = "Message sent"
+        } catch(e) {
+          resultHeader.style.backgroundColor = 'red';
+          resultHeader.innerText = "Error happened";
+          console.error(e);
+        }
+
+      } else if (window.webkit && window.webkit.messageHandlers) {
+        // Call iOS interface
+        try {
+          webkit.messageHandlers.NativeJavascriptInterface.postMessage(CLOSE_EVENT_MESSAGE);
+          resultHeader.style.backgroundColor = 'green';
+          resultHeader.innerText = "Message sent"
+        } catch (err) {
+          resultHeader.style.backgroundColor = 'red';
+          resultHeader.innerText = "Error happened";
+          console.error(e);
+        }
+      } else {
+        // No Android or iOS interface found
+        resultHeader.style.backgroundColor = 'orange';
+        resultHeader.innerText = "No native APIs found."
+        console.log('No native APIs found.');
+      }
+    }
+  </script>
+</head>
+<body>
+<button onClick="sendCloseButtonEvent();">Send Close event</button>
+<h1 id="result"></h1>
+</body>
+</html>
