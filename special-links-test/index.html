@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Test close event</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <script>
+        const AUTHORIZATION_COOKIE_NAME = 'AuthorizationHeader';
+        const MEMBER_DATA_COOKIE_NAME = "memberData";
+        const COMPLETED_EVENT = "completed";
+    </script>
+
+    <script>
+        window.addEventListener("load", function readAuthCookie() {
+            const authorizationHeader = readCookie(AUTHORIZATION_COOKIE_NAME);
+
+            const element = document.getElementById('authorization-cookie');
+            if (authorizationHeader != null) {
+                element.innerHTML = `Cookie "${AUTHORIZATION_COOKIE_NAME}" has value:<br />${authorizationHeader}`;
+                console.log(`${AUTHORIZATION_COOKIE_NAME} cookie value:`, authorizationHeader);
+            } else {
+                element.innerText = `Cookie "${AUTHORIZATION_COOKIE_NAME}" not found`;
+                console.log(`Cookie ${AUTHORIZATION_COOKIE_NAME} not found`);
+            }
+        });
+
+        window.addEventListener("load", function readMemberDataCookie() {
+            try {
+                const memberDataJson = readCookie(MEMBER_DATA_COOKIE_NAME);
+                const memberData = JSON.parse(memberDataJson);
+
+                const element = document.getElementById('member-data');
+                if (memberData != null) {
+                    element.innerText = JSON.stringify(memberData);
+                    console.log(`${MEMBER_DATA_COOKIE_NAME} cookie value:`, memberDataJson);
+                } else {
+                    element.innerText = `Cookie "${MEMBER_DATA_COOKIE_NAME}" not found`;
+                    console.log(`Cookie ${MEMBER_DATA_COOKIE_NAME} not found`);
+                }
+            } catch(e) {
+                console.error("Error happened when reading member data cookie", e);
+            }
+        });
+
+        function readCookie(name) {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    return cookie.substring(name.length + 1);
+                }
+            }
+            return null;
+        }
+    </script>
+
+    <script>
+        function sendCompletedEvent() {
+            const resultHeader = document.getElementById("result");
+
+            if (window.NativeJavascriptInterface) {
+                // Call Android interface
+                try {
+                    window.NativeJavascriptInterface.postMessage(COMPLETED_EVENT);
+                    resultHeader.style.backgroundColor = 'green';
+                    resultHeader.innerText = "Message sent"
+                } catch(e) {
+                    resultHeader.style.backgroundColor = 'red';
+                    resultHeader.innerText = "Error happened";
+                    console.error(e);
+                }
+
+            } else if (window.webkit && window.webkit.messageHandlers) {
+                // Call iOS interface
+                try {
+                    webkit.messageHandlers.NativeJavascriptInterface.postMessage(COMPLETED_EVENT);
+                    resultHeader.style.backgroundColor = 'green';
+                    resultHeader.innerText = "Message sent"
+                } catch (err) {
+                    resultHeader.style.backgroundColor = 'red';
+                    resultHeader.innerText = "Error happened";
+                    console.error(e);
+                }
+            } else {
+                // No Android or iOS interface found
+                resultHeader.style.backgroundColor = 'orange';
+                resultHeader.innerText = "No native APIs found."
+                console.log('No native APIs found.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <div style="display: flex; flex-direction: column; gap: 16px">
+        <div id="authorization-cookie"></div>
+
+        <div id="member-data"></div>
+
+        <div>
+            <button onClick="sendCompletedEvent();">Send Close event</button>
+            <div id="result" style="display: inline-block"></div>
+        </div>
+    </div>
+</body>
+</html>
