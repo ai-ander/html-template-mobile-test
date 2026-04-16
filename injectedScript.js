@@ -42,7 +42,7 @@
         lastName: "",
         email: "",
         externalId: "",
-        role: ''
+        roleText: '',
     };
 
     function setNativeValue(element, value) {
@@ -88,10 +88,9 @@
 
     function fill(root = document) {
         const {first, last, email} = findInputs(root);
-        const smRadio = findJobRoleRadioButton('Sales Manager');
-        const scRadio = findJobRoleRadioButton('Sales Consultant');
+        const jobRoleButton = findJobRoleRadioButton(DATA.roleText);
 
-        const noInputsFound = [first, last, email, smRadio, scRadio].every(el => !el);
+        const noInputsFound = [first, last, email, jobRoleButton].every(el => !el);
         if (noInputsFound) {
             return false;
         }
@@ -99,18 +98,7 @@
         if (first && !first.value) setNativeValue(first, DATA.firstName);
         if (last && !last.value) setNativeValue(last, DATA.lastName);
         if (email && !email.value) setNativeValue(email, DATA.email);
-
-        switch (DATA.role) {
-            case 'SM':
-                smRadio?.click();
-                break;
-            case 'SC':
-                scRadio?.click();
-                break;
-            default:
-                log('Unknown role in DATA');
-                break;
-        }
+        jobRoleButton?.click();
 
         return true;
     }
@@ -157,6 +145,19 @@
         }
     }
 
+    function findPrimaryJobCodes(sessionMe) {
+        const hyundaiPartner = sessionMe.partners?.find(p => p.publicId === 'hyundai');
+        if (!hyundaiPartner) return [];
+
+        const def = hyundaiPartner.variableDefinitions?.find(d => d.name === 'Hyundai.PrimaryJobCodes');
+        if (!def) return [];
+
+        const variable = sessionMe.variables?.find(v => String(v.definitionId) === String(def.id));
+        if (!variable) return [];
+
+        return Array.isArray(variable.value) ? variable.value.map(String) : [];
+    }
+
     async function fetchData() {
         try {
             const resp = await fetch(`${domain}api/session/me`, {
@@ -172,9 +173,11 @@
 
             const email = data.email || "";
             const externalId = data.externalId || "";
-            const role = 'SM';
+            const primaryJobCodes = findPrimaryJobCodes(data);
+            const roleText = primaryJobCodes.includes('SM') ? 'Sales Manager' :
+                primaryJobCodes.includes('SC') ? 'Sales Consultant' : '';
 
-            DATA = {firstName, lastName, email, externalId, role};
+            DATA = {firstName, lastName, email, externalId, roleText};
 
             init();
         } catch (e) {
