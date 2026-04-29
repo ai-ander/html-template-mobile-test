@@ -72,9 +72,10 @@
         const first = root.querySelector("input#question_first_name");
         const last = root.querySelector("input#question_last_name");
         const email = root.querySelector("input#question_email");
+        const hma = root.querySelector("input#question_HMA\\/DLRID");
         const dealerCode = root.querySelector("input#question_DealerCode");
         const dealershipName = root.querySelector("input#question_DealershipName");
-        return {first, last, email, dealerCode, dealershipName};
+        return {first, last, email, hma, dealerCode, dealershipName};
     }
 
     function findJobRoleRadioButton(roleText) {
@@ -92,10 +93,10 @@
     }
 
     function fill(root = document) {
-        const {first, last, email, dealerCode, dealershipName} = findInputs(root);
+        const {first, last, email, hma, dealerCode, dealershipName} = findInputs(root);
         const jobRoleButton = findJobRoleRadioButton(DATA.roleText);
 
-        const noInputsFound = [first, last, email, jobRoleButton, dealerCode, dealershipName].every(el => !el);
+        const noInputsFound = [first, last, email, hma, jobRoleButton, dealerCode, dealershipName].every(el => !el);
         if (noInputsFound) {
             return false;
         }
@@ -103,6 +104,7 @@
         if (first && !first.value) setNativeValue(first, DATA.firstName);
         if (last && !last.value) setNativeValue(last, DATA.lastName);
         if (email && !email.value) setNativeValue(email, DATA.email);
+        if (hma && !hma.value) setNativeValue(hma, DATA.externalId);
         if (dealerCode && !dealerCode.value) setNativeValue(dealerCode, DATA.dealerCodes.join(', '));
         if (dealershipName && !dealershipName.value) setNativeValue(dealershipName, DATA.dealershipNames.join(', '));
         jobRoleButton?.click();
