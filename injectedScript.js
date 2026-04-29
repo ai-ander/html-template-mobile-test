@@ -35,7 +35,7 @@
     window[runOnlyOnceGuard] = true;
 
     const token = "TOKEN_PLACEHOLDER";
-    const domain = "DOMAIN_PLACEHOLDER";
+    const apiBaseURL = "https://server.qa.ander.ai/";
     const partnerPublicId = 'hyundai'
 
     let DATA = {
@@ -122,6 +122,17 @@
 
     function start(root = document) {
         let filled = false;
+        let observer;
+        let interval
+
+        const debouncedTryFill = debounce(tryFill, 150);
+        tryFill();
+
+        observer = new MutationObserver(debouncedTryFill);
+        observer.observe(root, {childList: true, subtree: true});
+
+        interval = setInterval(tryFill, 500);
+        setTimeout(cleanup, 15000);
 
         function tryFill() {
             if (filled) return;
@@ -132,18 +143,9 @@
         }
 
         function cleanup() {
-            observer.disconnect();
+            observer?.disconnect();
             clearInterval(interval);
         }
-
-        const debouncedTryFill = debounce(tryFill, 150);
-        tryFill();
-
-        const observer = new MutationObserver(debouncedTryFill);
-        observer.observe(root, {childList: true, subtree: true});
-
-        const interval = setInterval(tryFill, 500);
-        setTimeout(cleanup, 15000);
     }
 
     function init() {
@@ -154,11 +156,17 @@
         }
     }
 
-    function findPrimaryJobCodes(variables) {
-        const jobCodesVar = variables?.find(v =>
-            v.displayName === 'Hyundai.PrimaryJobCodes'
-        );
-        return Array.isArray(jobCodesVar?.value) ? jobCodesVar.value.map(String) : [];
+    function findPrimaryJobCodes(sessionMe) {
+        const hyundaiPartner = sessionMe.partners?.find(p => p.publicId === 'hyundai');
+        if (!hyundaiPartner) return [];
+
+        const def = hyundaiPartner.variableDefinitions?.find(d => d.name === 'Hyundai.PrimaryJobCodes');
+        if (!def) return [];
+
+        const variable = sessionMe.variables?.find(v => String(v.definitionId) === String(def.id));
+        if (!variable) return [];
+
+        return Array.isArray(variable.value) ? variable.value.map(String) : [];
     }
 
     function extractDealerCode(externalId) {
@@ -168,41 +176,49 @@
     }
 
     async function fetchData() {
-        try {
-            const resp = await fetch(`${domain}api/session/member/profile?partnerPublicId=${partnerPublicId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+        const fetchJson = (url) =>
+            fetch(url, {headers: {Authorization: `Bearer ${token}`}}).then(r => r.json());
 
-            const data = await resp.json();
-            const fullName = data.displayName || "";
-            const {1: firstName = "", 2: lastName = ""} =
-            fullName.trim().match(/^(\S+)\s+(.+)$/) || [];
+        const [sessionMeResult, profileResult] = await Promise.allSettled([
+            fetchJson(`${apiBaseURL}api/session/me`),
+            fetchJson(`${apiBaseURL}api/session/member/profile?partnerPublicId=${partnerPublicId}`),
+        ]);
 
-            const email = data.email || "";
-            const externalId = data.externalId || "";
-            const primaryJobCodes = findPrimaryJobCodes(data.variables);
-            const roleText = primaryJobCodes.includes('SM') ? 'Sales Manager' :
-                primaryJobCodes.includes('SC') ? 'Sales Consultant' : '';
+        let firstName = "", lastName = "", email = "", externalId = "", roleText = '';
+        let dealerCodes = [], dealershipNames = [];
 
-            const sortedGroups = data.groups?.toSorted((a, b) =>
+        if (sessionMeResult.status === 'fulfilled') {
+            const me = sessionMeResult.value;
+            const fullName = me.displayName || "";
+            const {1: fn = "", 2: ln = ""} = fullName.trim().match(/^(\S+)\s+(.+)$/) || [];
+            firstName = fn;
+            lastName = ln;
+            email = me.email || "";
+            externalId = me.externalId || "";
+            const primaryJobCodes = findPrimaryJobCodes(me);
+            roleText = primaryJobCodes.includes('SM') ? 'Sales Manager' :
+                primaryJobCodes.includes('SP') ? 'Sales Consultant' : 'other';
+        } else {
+            log("session/me error: " + sessionMeResult.reason?.message);
+        }
+
+        if (profileResult.status === 'fulfilled') {
+            const profile = profileResult.value;
+            if (!email) email = profile.email || "";
+            const sortedGroups = profile.groups?.toSorted((a, b) =>
                 (a.name || '').localeCompare(b.name || '')
             ) ?? [];
-
-            const groupNameAndCodeTuples = sortedGroups.filter(g => !!g.name).map(g => {
-                return [g.name, extractDealerCode(g.externalId) ?? '']
-            })
-
-            const dealershipNames = groupNameAndCodeTuples.map(([name]) => name);
-            const dealerCodes = groupNameAndCodeTuples.map(([, code]) => code);
-
-            DATA = {firstName, lastName, email, externalId, roleText, dealerCodes, dealershipNames};
-
-            init();
-        } catch (e) {
-            log("Fetch error: " + e.message);
+            const tuples = sortedGroups.filter(g => !!g.name).map(g =>
+                [g.name, extractDealerCode(g.externalId) ?? '']
+            );
+            dealershipNames = tuples.map(([name]) => name);
+            dealerCodes = tuples.map(([, code]) => code);
+        } else {
+            log("session/member/profile error: " + profileResult.reason?.message);
         }
+
+        DATA = {firstName, lastName, email, externalId, roleText, dealerCodes, dealershipNames};
+        init();
     }
 
     fetchData();
