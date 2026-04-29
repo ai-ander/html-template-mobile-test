@@ -36,6 +36,7 @@
 
     const token = "TOKEN_PLACEHOLDER";
     const domain = "DOMAIN_PLACEHOLDER";
+    const partnerPublicId = 'hyundai'
 
     let DATA = {
         firstName: "",
@@ -43,6 +44,8 @@
         email: "",
         externalId: "",
         roleText: '',
+        dealerCodes: [],
+        dealershipNames: [],
     };
 
     function setNativeValue(element, value) {
@@ -69,7 +72,9 @@
         const first = root.querySelector("input#question_first_name");
         const last = root.querySelector("input#question_last_name");
         const email = root.querySelector("input#question_email");
-        return {first, last, email};
+        const dealerCode = root.querySelector("input#question_DealerCode");
+        const dealershipName = root.querySelector("input#question_DealershipName");
+        return {first, last, email, dealerCode, dealershipName};
     }
 
     function findJobRoleRadioButton(roleText) {
@@ -87,10 +92,10 @@
     }
 
     function fill(root = document) {
-        const {first, last, email} = findInputs(root);
+        const {first, last, email, dealerCode, dealershipName} = findInputs(root);
         const jobRoleButton = findJobRoleRadioButton(DATA.roleText);
 
-        const noInputsFound = [first, last, email, jobRoleButton].every(el => !el);
+        const noInputsFound = [first, last, email, jobRoleButton, dealerCode, dealershipName].every(el => !el);
         if (noInputsFound) {
             return false;
         }
@@ -98,6 +103,8 @@
         if (first && !first.value) setNativeValue(first, DATA.firstName);
         if (last && !last.value) setNativeValue(last, DATA.lastName);
         if (email && !email.value) setNativeValue(email, DATA.email);
+        if (dealerCode && !dealerCode.value) setNativeValue(dealerCode, DATA.dealerCodes.join(', '));
+        if (dealershipName && !dealershipName.value) setNativeValue(dealershipName, DATA.dealershipNames.join(', '));
         jobRoleButton?.click();
 
         return true;
@@ -145,22 +152,22 @@
         }
     }
 
-    function findPrimaryJobCodes(sessionMe) {
-        const hyundaiPartner = sessionMe.partners?.find(p => p.publicId === 'hyundai');
-        if (!hyundaiPartner) return [];
+    function findPrimaryJobCodes(variables) {
+        const jobCodesVar = variables?.find(v =>
+            v.displayName === 'Hyundai.PrimaryJobCodes'
+        );
+        return Array.isArray(jobCodesVar?.value) ? jobCodesVar.value.map(String) : [];
+    }
 
-        const def = hyundaiPartner.variableDefinitions?.find(d => d.name === 'Hyundai.PrimaryJobCodes');
-        if (!def) return [];
-
-        const variable = sessionMe.variables?.find(v => String(v.definitionId) === String(def.id));
-        if (!variable) return [];
-
-        return Array.isArray(variable.value) ? variable.value.map(String) : [];
+    function extractDealerCode(externalId) {
+        if (typeof externalId !== 'string') return null;
+        const match = externalId.match(/^Hyundai-(.+?)(?:-Sales)?$/);
+        return match ? match[1] : null;
     }
 
     async function fetchData() {
         try {
-            const resp = await fetch(`${domain}api/session/me`, {
+            const resp = await fetch(`${domain}api/session/member/profile?partnerPublicId=${partnerPublicId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -173,11 +180,22 @@
 
             const email = data.email || "";
             const externalId = data.externalId || "";
-            const primaryJobCodes = findPrimaryJobCodes(data);
+            const primaryJobCodes = findPrimaryJobCodes(data.variables);
             const roleText = primaryJobCodes.includes('SM') ? 'Sales Manager' :
                 primaryJobCodes.includes('SC') ? 'Sales Consultant' : '';
 
-            DATA = {firstName, lastName, email, externalId, roleText};
+            const sortedGroups = data.groups?.toSorted((a, b) =>
+                (a.name || '').localeCompare(b.name || '')
+            ) ?? [];
+
+            const groupNameAndCodeTuples = sortedGroups.filter(g => !!g.name).map(g => {
+                return [g.name, extractDealerCode(g.externalId) ?? '']
+            })
+
+            const dealershipNames = groupNameAndCodeTuples.map(([name]) => name);
+            const dealerCodes = groupNameAndCodeTuples.map(([, code]) => code);
+
+            DATA = {firstName, lastName, email, externalId, roleText, dealerCodes, dealershipNames};
 
             init();
         } catch (e) {
