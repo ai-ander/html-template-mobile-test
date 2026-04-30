@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Cookies</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 16px;
+        background: #f2f2f7;
+        padding: 16px;
+      }
+
+      h1 {
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: #1c1c1e;
+      }
+
+      .empty {
+        font-size: 16px;
+        color: #8e8e93;
+        text-align: center;
+        margin-top: 40px;
+      }
+
+      .cookie-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .cookie-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 14px 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      .cookie-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #8e8e93;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+
+      .cookie-value {
+        font-size: 15px;
+        color: #1c1c1e;
+        word-break: break-all;
+        font-family: "Menlo", "Courier New", monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cookies</h1>
+    <div id="root"></div>
+
+    <script>
+      const root = document.getElementById("root");
+      const raw = document.cookie;
+      const cookies = raw
+        ? raw.split(";").map((c) => {
+            const idx = c.indexOf("=");
+            return {
+              name: c.slice(0, idx).trim(),
+              value: c.slice(idx + 1).trim(),
+            };
+          })
+        : [];
+
+      console.log("All cookies:", cookies);
+
+      if (cookies.length === 0) {
+        root.innerHTML = '<p class="empty">No cookies found</p>';
+      } else {
+        const list = document.createElement("div");
+        list.className = "cookie-list";
+
+        cookies.forEach(({ name, value }) => {
+          list.insertAdjacentHTML(
+            "beforeend",
+            `<div class="cookie-card">
+              <div class="cookie-name">${escapeHtml(name)}</div>
+              <div class="cookie-value">${escapeHtml(value) || "<em>empty</em>"}</div>
+            </div>`
+          );
+        });
+
+        root.appendChild(list);
+      }
+
+      function escapeHtml(str) {
+        return str.replace(
+          /[&<>"']/g,
+          (c) =>
+            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+        );
+      }
+    </script>
+  </body>
+</html>
