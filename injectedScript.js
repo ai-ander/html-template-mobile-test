@@ -35,8 +35,8 @@
     window[runOnlyOnceGuard] = true;
 
     const token = "TOKEN_PLACEHOLDER";
-    const apiBaseURL = "https://server.qa.ander.ai/";
-    const partnerPublicId = 'hyundai'
+    const apiBaseURL = "DOMAIN_PLACEHOLDER";
+    const partnerPublicId = 'PARTNER_PLACEHOLDER';
 
     let DATA = {
         firstName: "",
