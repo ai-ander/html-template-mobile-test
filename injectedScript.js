@@ -38,6 +38,8 @@
     const apiBaseURL = "DOMAIN_PLACEHOLDER";
     const partnerPublicId = 'PARTNER_PLACEHOLDER';
 
+    const debug = true;
+
     let DATA = {
         firstName: "",
         lastName: "",
@@ -180,7 +182,7 @@
             fetch(url, {headers: {Authorization: `Bearer ${token}`}}).then(r => r.json());
 
         const [sessionMeResult, profileResult] = await Promise.allSettled([
-            fetchJson(`${apiBaseURL}api/session/me?includePartnerData=true&includeGroupsData=true`),
+            fetchJson(`${apiBaseURL}api/session/me?includePartnerData=true`),
             fetchJson(`${apiBaseURL}api/session/member/profile?partnerPublicId=${partnerPublicId}`),
         ]);
 
@@ -188,6 +190,8 @@
         let dealerCodes = [], dealershipNames = [];
 
         if (sessionMeResult.status === 'fulfilled') {
+            debug && log('session/me ' + JSON.stringify(sessionMeResult.value));
+
             const me = sessionMeResult.value;
             const fullName = me.displayName || "";
             const {1: fn = "", 2: ln = ""} = fullName.trim().match(/^(\S+)\s+(.+)$/) || [];
@@ -198,11 +202,15 @@
             const primaryJobCodes = findPrimaryJobCodes(me);
             roleText = primaryJobCodes.includes('SM') ? 'Sales Manager' :
                 primaryJobCodes.includes('SP') ? 'Sales Consultant' : 'Other';
+
+            debug && log('primaryJobCodes: ' + JSON.stringify(primaryJobCodes));
         } else {
             log("session/me error: " + sessionMeResult.reason?.message);
         }
 
         if (profileResult.status === 'fulfilled') {
+            debug && log('session/member/profile ' + JSON.stringify(profileResult.value));
+
             const profile = profileResult.value;
             if (!email) email = profile.email || "";
             const sortedGroups = profile.groups?.toSorted((a, b) =>
@@ -213,11 +221,14 @@
             );
             dealershipNames = tuples.map(([name]) => name);
             dealerCodes = tuples.map(([, code]) => code);
+
+            debug && log('dealerships ([name, code]): ' + JSON.stringify(tuples));
         } else {
             log("session/member/profile error: " + profileResult.reason?.message);
         }
-
         DATA = {firstName, lastName, email, externalId, roleText, dealerCodes, dealershipNames};
+
+        debug && log('DATA: ' + JSON.stringify(DATA));
         init();
     }
 
