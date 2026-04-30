@@ -197,7 +197,7 @@
             externalId = me.externalId || "";
             const primaryJobCodes = findPrimaryJobCodes(me);
             roleText = primaryJobCodes.includes('SM') ? 'Sales Manager' :
-                primaryJobCodes.includes('SP') ? 'Sales Consultant' : 'other';
+                primaryJobCodes.includes('SP') ? 'Sales Consultant' : 'Other';
         } else {
             log("session/me error: " + sessionMeResult.reason?.message);
         }
