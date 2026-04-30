@@ -180,7 +180,7 @@
             fetch(url, {headers: {Authorization: `Bearer ${token}`}}).then(r => r.json());
 
         const [sessionMeResult, profileResult] = await Promise.allSettled([
-            fetchJson(`${apiBaseURL}api/session/me`),
+            fetchJson(`${apiBaseURL}api/session/me?includePartnerData=true&includeGroupsData=true`),
             fetchJson(`${apiBaseURL}api/session/member/profile?partnerPublicId=${partnerPublicId}`),
         ]);
 
