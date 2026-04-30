@@ -100,8 +100,21 @@
 
         const noInputsFound = [first, last, email, hma, jobRoleButton, dealerCode, dealershipName].every(el => !el);
         if (noInputsFound) {
+            log('no inputs found')
             return false;
         }
+
+        debug && log("Found inputs: " + JSON.stringify(Object.fromEntries(Object.entries({
+            first,
+            last,
+            email,
+            hma,
+            jobRoleButton,
+            dealerCode,
+            dealershipName
+        }).map(([key, value]) => {
+            return [key, Boolean(value)];
+        }))));
 
         if (first && !first.value) setNativeValue(first, DATA.firstName);
         if (last && !last.value) setNativeValue(last, DATA.lastName);
