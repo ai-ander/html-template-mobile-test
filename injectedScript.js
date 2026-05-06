@@ -1,29 +1,8 @@
 (function anderInputAutofill() {
-    const log = (function findNativeLogger() {
-        if (window.NativeJavascriptInterface) {
-            return function androidLogger(msg) {
-                // Call Android interface
-                try {
-                    window.NativeJavascriptInterface.postMessage(msg);
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-        } else if (window.webkit && window.webkit.messageHandlers) {
-            return function iosLogger(msg) {
-                // Call iOS interface
-                try {
-                    webkit.messageHandlers.NativeJavascriptInterface.postMessage(msg);
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-        } else {
-            // No Android or iOS interface found
-            console.warn("No native APIs found.");
-            return console.log;
-        }
-    })()
+    const debugLogs = false;
+    const logs = false;
+
+    const log = logs ? findNativePostMessage() : () => {};
 
     const runOnlyOnceGuard = 'anderInputAutofillExecuted';
 
@@ -37,8 +16,6 @@
     const token = "TOKEN_PLACEHOLDER";
     const apiBaseURL = "DOMAIN_PLACEHOLDER";
     const partnerPublicId = 'PARTNER_PLACEHOLDER';
-
-    const debug = true;
 
     let DATA = {
         firstName: "",
@@ -104,7 +81,7 @@
             return false;
         }
 
-        debug && log("Found inputs: " + JSON.stringify(Object.fromEntries(Object.entries({
+        debugLogs && log("Found inputs: " + JSON.stringify(Object.fromEntries(Object.entries({
             first,
             last,
             email,
@@ -190,6 +167,9 @@
         return match ? match[1] : null;
     }
 
+    fetchData();
+
+    // FUNCTION DECLARATIONS:
     async function fetchData() {
         const fetchJson = (url) =>
             fetch(url, {headers: {Authorization: `Bearer ${token}`}}).then(r => r.json());
@@ -203,7 +183,7 @@
         let dealerCodes = [], dealershipNames = [];
 
         if (sessionMeResult.status === 'fulfilled') {
-            debug && log('session/me ' + JSON.stringify(sessionMeResult.value));
+            debugLogs && log('session/me ' + JSON.stringify(sessionMeResult.value));
 
             const me = sessionMeResult.value;
             const fullName = me.displayName || "";
@@ -216,13 +196,13 @@
             roleText = primaryJobCodes.includes('SM') ? 'Sales Manager' :
                 primaryJobCodes.includes('SP') ? 'Sales Consultant' : 'Other';
 
-            debug && log('primaryJobCodes: ' + JSON.stringify(primaryJobCodes));
+            debugLogs && log('primaryJobCodes: ' + JSON.stringify(primaryJobCodes));
         } else {
             log("session/me error: " + sessionMeResult.reason?.message);
         }
 
         if (profileResult.status === 'fulfilled') {
-            debug && log('session/member/profile ' + JSON.stringify(profileResult.value));
+            debugLogs && log('session/member/profile ' + JSON.stringify(profileResult.value));
 
             const profile = profileResult.value;
             if (!email) email = profile.email || "";
@@ -235,15 +215,39 @@
             dealershipNames = tuples.map(([name]) => name);
             dealerCodes = tuples.map(([, code]) => code);
 
-            debug && log('dealerships ([name, code]): ' + JSON.stringify(tuples));
+            debugLogs && log('dealerships ([name, code]): ' + JSON.stringify(tuples));
         } else {
             log("session/member/profile error: " + profileResult.reason?.message);
         }
         DATA = {firstName, lastName, email, externalId, roleText, dealerCodes, dealershipNames};
 
-        debug && log('DATA: ' + JSON.stringify(DATA));
+        debugLogs && log('DATA: ' + JSON.stringify(DATA));
         init();
     }
 
-    fetchData();
+    function findNativePostMessage() {
+        if (window.NativeJavascriptInterface) {
+            return function androidLogger(msg) {
+                // Call Android interface
+                try {
+                    window.NativeJavascriptInterface.postMessage(msg);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        } else if (window.webkit && window.webkit.messageHandlers) {
+            return function iosLogger(msg) {
+                // Call iOS interface
+                try {
+                    webkit.messageHandlers.NativeJavascriptInterface.postMessage(msg);
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        } else {
+            // No Android or iOS interface found
+            console.warn("No native APIs found.");
+            return console.log;
+        }
+    }
 })()
