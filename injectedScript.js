@@ -1,8 +1,8 @@
 (function anderInputAutofill() {
     const debugLogs = false;
-    const logs = false;
+    const shouldLog = false;
 
-    const log = logs ? findNativePostMessage() : () => {};
+    const log = shouldLog ? findNativePostMessage() : () => {};
 
     const runOnlyOnceGuard = 'anderInputAutofillExecuted';
 
@@ -13,9 +13,16 @@
 
     window[runOnlyOnceGuard] = true;
 
+    const currentURL = window.location.href;
+    const isRegistrantPage = currentURL.includes('webinar/registrant');
+    const isRegisterPage = !isRegistrantPage && currentURL.includes('webinar/register');
+
+    if (!isRegisterPage && !isRegistrantPage) return;
+
     const token = "TOKEN_PLACEHOLDER";
     const apiBaseURL = "DOMAIN_PLACEHOLDER";
     const partnerPublicId = 'PARTNER_PLACEHOLDER';
+    const completedEvent = 'completed'
 
     let DATA = {
         firstName: "",
@@ -112,7 +119,7 @@
         };
     }
 
-    function start(root = document) {
+    function startFilling(root = document) {
         let filled = false;
         let observer;
         let interval
@@ -140,14 +147,6 @@
         }
     }
 
-    function init() {
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", init);
-        } else {
-            start(document);
-        }
-    }
-
     function findPrimaryJobCodes(sessionMe) {
         const hyundaiPartner = sessionMe.partners?.find(p => p.publicId === 'hyundai');
         if (!hyundaiPartner) return [];
@@ -167,9 +166,21 @@
         return match ? match[1] : null;
     }
 
-    fetchData();
+    if (isRegisterPage) {
+        initRegister();
+    } else {
+        initRegistrant();
+    }
 
     // FUNCTION DECLARATIONS:
+    async function initRegister() {
+        DATA = await fetchData();
+
+        debugLogs && log('DATA: ' + JSON.stringify(DATA));
+
+        onDOMContentLoad(() => startFilling(document));
+    }
+
     async function fetchData() {
         const fetchJson = (url) =>
             fetch(url, {headers: {Authorization: `Bearer ${token}`}}).then(r => r.json());
@@ -219,10 +230,21 @@
         } else {
             log("session/member/profile error: " + profileResult.reason?.message);
         }
-        DATA = {firstName, lastName, email, externalId, roleText, dealerCodes, dealershipNames};
 
-        debugLogs && log('DATA: ' + JSON.stringify(DATA));
-        init();
+        return {firstName, lastName, email, externalId, roleText, dealerCodes, dealershipNames};
+    }
+
+    function initRegistrant() {
+        const postMessage = findNativePostMessage();
+        onDOMContentLoad(() => postMessage(completedEvent));
+    }
+
+    function onDOMContentLoad(fn) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fn);
+        } else {
+            fn();
+        }
     }
 
     function findNativePostMessage() {
