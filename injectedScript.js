@@ -65,12 +65,17 @@
     }
 
     function findJobRoleRadioButton(roleText) {
-        let radio;
+        const radioWraps = window['question_JobRole']?.querySelectorAll('.zoom-radio__wrap');
 
-        window['question_JobRole']?.querySelectorAll('.zoom-radio__wrap').forEach(el => {
+        debugLogs && log("Found job role radio buttons: " + (radioWraps?.length ?? "N/A"));
+
+        let radio;
+        const roleTextNormalized = roleText.trim().toLocaleLowerCase();
+        radioWraps?.forEach(el => {
             if (radio) return;
 
-            if (el.innerText === roleText) {
+            const radioInnerTextNormalized = el.innerText.trim().toLocaleLowerCase();
+            if (radioInnerTextNormalized === roleTextNormalized) {
                 radio = el;
             }
         })
