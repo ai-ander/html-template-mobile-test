@@ -1,6 +1,7 @@
 (function anderInputAutofill() {
     const debugLogs = false;
-    const shouldLog = false;
+    const shouldLog = false || debugLogs;
+    const sendCompletedEventOnRegisterButtonScrolledIntoView = true;
 
     const log = shouldLog ? findNativePostMessage() : () => {};
 
@@ -183,7 +184,44 @@
 
         debugLogs && log('DATA: ' + JSON.stringify(DATA));
 
-        onDOMContentLoad(() => startFilling(document));
+        onDOMContentLoad(() => {
+            startFilling(document);
+            if (sendCompletedEventOnRegisterButtonScrolledIntoView) watchRegisterButton();
+        });
+    }
+
+    function watchRegisterButton() {
+        function findButton() {
+            return Array.from(document.querySelectorAll('button[type="button"]')).find(
+                b => b.innerText.trim().toLocaleLowerCase() === 'register'
+            );
+        }
+
+        function attachIntersectionObserver(btn) {
+            const observer = new IntersectionObserver(entries => {
+                if (entries.some(e => e.intersectionRatio === 1)) {
+                    log('Register button fully visible, sending completed event');
+                    const postMessage = findNativePostMessage();
+                    postMessage(completedEvent);
+                    observer.disconnect();
+                }
+            }, {threshold: 1.0});
+            observer.observe(btn);
+        }
+
+        const btn = findButton();
+        if (btn) {
+            attachIntersectionObserver(btn);
+        } else {
+            const mutationObserver = new MutationObserver(() => {
+                const btn = findButton();
+                if (btn) {
+                    mutationObserver.disconnect();
+                    attachIntersectionObserver(btn);
+                }
+            });
+            mutationObserver.observe(document, {childList: true, subtree: true});
+        }
     }
 
     async function fetchData() {
