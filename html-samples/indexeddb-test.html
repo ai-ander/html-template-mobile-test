@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>IndexedDB Test</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 16px;
+        background: #f2f2f7;
+        color: #1c1c1e;
+        padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+          max(20px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+      }
+
+      main {
+        width: 100%;
+        max-width: 560px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 24px;
+        line-height: 1.2;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        font-size: 15px;
+        line-height: 1.4;
+        color: #636366;
+        margin-bottom: 18px;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 40px;
+        margin-bottom: 14px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #3a3a3c;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      .status-dot {
+        flex: 0 0 auto;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #8e8e93;
+      }
+
+      .status.ok .status-dot {
+        background: #34c759;
+      }
+
+      .status.error .status-dot {
+        background: #ff3b30;
+      }
+
+      .panel {
+        margin-bottom: 16px;
+        padding: 14px;
+        border-radius: 12px;
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      .form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #636366;
+      }
+
+      input {
+        width: 100%;
+        min-height: 48px;
+        border: 1px solid #d1d1d6;
+        border-radius: 10px;
+        padding: 12px 13px;
+        font: inherit;
+        color: #1c1c1e;
+        background: #ffffff;
+      }
+
+      input:focus {
+        border-color: #007aff;
+        outline: 3px solid rgba(0, 122, 255, 0.16);
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      button {
+        min-height: 48px;
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
+
+      .primary {
+        background: #007aff;
+        color: #ffffff;
+      }
+
+      .secondary {
+        background: #e5e5ea;
+        color: #1c1c1e;
+      }
+
+      .danger {
+        width: 100%;
+        background: #ff3b30;
+        color: #ffffff;
+      }
+
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+
+      .toolbar h2 {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .count {
+        font-size: 13px;
+        color: #636366;
+      }
+
+      .empty {
+        padding: 28px 12px;
+        color: #8e8e93;
+        text-align: center;
+      }
+
+      .item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .item-card {
+        padding: 13px 14px;
+        border-radius: 10px;
+        background: #ffffff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+
+      .item-text {
+        font-size: 16px;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      }
+
+      .item-meta {
+        margin-top: 7px;
+        font-size: 12px;
+        color: #8e8e93;
+      }
+
+      @media (min-width: 480px) {
+        body {
+          padding-top: 28px;
+        }
+
+        .form {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          align-items: end;
+        }
+
+        .form label {
+          grid-column: 1 / -1;
+        }
+
+        .form button {
+          min-width: 112px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>IndexedDB Test</h1>
+      <p class="subtitle">Add an item, reload the WebView, and confirm it remains stored.</p>
+
+      <div id="status" class="status">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="statusText">Opening IndexedDB...</span>
+      </div>
+
+      <section class="panel">
+        <form id="itemForm" class="form" autocomplete="off">
+          <label for="itemText">Item text</label>
+          <input id="itemText" name="itemText" type="text" placeholder="Type something to persist" />
+          <button id="addButton" class="primary" type="submit">Add item</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="actions">
+          <button id="reloadButton" class="secondary" type="button">Reload page</button>
+          <button id="clearButton" class="danger" type="button">Clear all</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="toolbar">
+          <h2>Stored items</h2>
+          <span id="count" class="count">0 items</span>
+        </div>
+        <div id="root"></div>
+      </section>
+    </main>
+
+    <script>
+      const DB_NAME = "webview-indexeddb-test";
+      const DB_VERSION = 1;
+      const STORE_NAME = "items";
+
+      const root = document.getElementById("root");
+      const count = document.getElementById("count");
+      const status = document.getElementById("status");
+      const statusText = document.getElementById("statusText");
+      const itemForm = document.getElementById("itemForm");
+      const itemText = document.getElementById("itemText");
+      const addButton = document.getElementById("addButton");
+      const clearButton = document.getElementById("clearButton");
+      const reloadButton = document.getElementById("reloadButton");
+
+      let db = null;
+
+      init();
+
+      itemForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const text = itemText.value.trim();
+        if (!text) {
+          itemText.focus();
+          return;
+        }
+
+        setBusy(true);
+        try {
+          await addItem(text);
+          itemText.value = "";
+          await renderItems();
+          setStatus("ok", "Item saved to IndexedDB.");
+        } catch (error) {
+          console.error("Failed to add item:", error);
+          setStatus("error", getErrorMessage(error));
+        } finally {
+          setBusy(false);
+        }
+      });
+
+      clearButton.addEventListener("click", async () => {
+        setBusy(true);
+        setStatus("", "Deleting IndexedDB database...");
+
+        try {
+          await deleteDatabase();
+          db = await openDatabase();
+          await renderItems();
+          setStatus("ok", "IndexedDB database deleted and recreated.");
+        } catch (error) {
+          console.error("Failed to delete database:", error);
+          setStatus("error", getErrorMessage(error));
+        } finally {
+          setBusy(false);
+        }
+      });
+
+      reloadButton.addEventListener("click", () => {
+        window.location.reload();
+      });
+
+      async function init() {
+        if (!("indexedDB" in window)) {
+          setStatus("error", "IndexedDB is not available in this WebView.");
+          setBusy(true);
+          return;
+        }
+
+        setBusy(true);
+        try {
+          db = await openDatabase();
+          await renderItems();
+          setStatus("ok", "IndexedDB is available.");
+        } catch (error) {
+          console.error("Failed to open IndexedDB:", error);
+          setStatus("error", getErrorMessage(error));
+        } finally {
+          setBusy(false);
+        }
+      }
+
+      function openDatabase() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+          request.onupgradeneeded = () => {
+            const nextDb = request.result;
+            if (!nextDb.objectStoreNames.contains(STORE_NAME)) {
+              const store = nextDb.createObjectStore(STORE_NAME, {
+                keyPath: "id",
+                autoIncrement: true,
+              });
+              store.createIndex("createdAt", "createdAt");
+            }
+          };
+
+          request.onsuccess = () => {
+            const openedDb = request.result;
+            openedDb.onversionchange = () => openedDb.close();
+            resolve(openedDb);
+          };
+          request.onerror = () => reject(request.error);
+          request.onblocked = () => reject(new Error("IndexedDB open request was blocked."));
+        });
+      }
+
+      function addItem(text) {
+        return withStore("readwrite", (store) =>
+          store.add({
+            text,
+            createdAt: new Date().toISOString(),
+          })
+        );
+      }
+
+      function getItems() {
+        return withStore("readonly", (store) => store.getAll()).then((items) =>
+          items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        );
+      }
+
+      function withStore(mode, action) {
+        return new Promise((resolve, reject) => {
+          if (!db) {
+            reject(new Error("IndexedDB database is not open."));
+            return;
+          }
+
+          const transaction = db.transaction(STORE_NAME, mode);
+          const store = transaction.objectStore(STORE_NAME);
+          const request = action(store);
+
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+          transaction.onerror = () => reject(transaction.error);
+        });
+      }
+
+      function deleteDatabase() {
+        return new Promise((resolve, reject) => {
+          if (db) {
+            db.close();
+            db = null;
+          }
+
+          const request = indexedDB.deleteDatabase(DB_NAME);
+
+          request.onsuccess = () => resolve();
+          request.onerror = () => reject(request.error);
+          request.onblocked = () =>
+            reject(new Error("Delete was blocked. Close other tabs or WebViews using this page."));
+        });
+      }
+
+      async function renderItems() {
+        const items = await getItems();
+        count.textContent = `${items.length} ${items.length === 1 ? "item" : "items"}`;
+
+        if (items.length === 0) {
+          root.innerHTML = '<p class="empty">No stored items</p>';
+          return;
+        }
+
+        const list = document.createElement("div");
+        list.className = "item-list";
+
+        items.forEach((item) => {
+          const card = document.createElement("div");
+          card.className = "item-card";
+
+          const text = document.createElement("div");
+          text.className = "item-text";
+          text.textContent = item.text;
+
+          const meta = document.createElement("div");
+          meta.className = "item-meta";
+          meta.textContent = `Saved ${formatDate(item.createdAt)}`;
+
+          card.appendChild(text);
+          card.appendChild(meta);
+          list.appendChild(card);
+        });
+
+        root.innerHTML = "";
+        root.appendChild(list);
+      }
+
+      function setStatus(type, message) {
+        status.className = `status${type ? ` ${type}` : ""}`;
+        statusText.textContent = message;
+      }
+
+      function setBusy(isBusy) {
+        addButton.disabled = isBusy;
+        clearButton.disabled = isBusy;
+      }
+
+      function getErrorMessage(error) {
+        return error && error.message ? error.message : "IndexedDB operation failed.";
+      }
+
+      function formatDate(value) {
+        return new Date(value).toLocaleString();
+      }
+    </script>
+  </body>
+</html>
